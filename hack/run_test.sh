@@ -27,6 +27,19 @@ function deploy_nfd_operator() {
 	ARTIFACT_DIR=$ART_DIR ginkgo ${GINKGO_ARGS} ./setup/ || error_and_exit "${FUNCNAME[0]} Test Failed." 2
 }
 
+function deploy_nfd_from_bundle() {
+    print_test_title "${FUNCNAME[0]}"
+    BUNDLE="$1"
+    if [ -z "$BUNDLE" ]; then
+        error_and_exit "${FUNCNAME[0]} Failed. No bundle provided." 7
+    fi
+    echo "=> Deploying '$BUNDLE' bundle"
+    operator-sdk run bundle --timeout=10m -n "openshift-nfd" \
+        --install-mode OwnNamespace \
+        ${BUNDLE} || error_and_exit "${FUNCNAME[0]} Test Failed" 8
+    deploy_nfd_operator "" || error_and_exit "${FUNCNAME[0]} Test Failed" 9
+}
+
 function deploy_gpu_operator() {
     print_test_title "${FUNCNAME[0]}"
     test_ocp_connection
@@ -195,6 +208,7 @@ case "$1" in
     deploy_gpu_operator) "$@" | tee -a "${OUTPUT_FILE}";;
     scale_aws_gpu_nodes) "$@" | tee -a "${OUTPUT_FILE}";;
     deploy_gpu_from_bundle) "$@" | tee -a "${OUTPUT_FILE}";;
+    deploy_nfd_from_bundle) "$@" | tee -a "${OUTPUT_FILE}";;
     deploy_gpu_operator_master) "$@" | tee -a "${OUTPUT_FILE}";;
     ocm_addons_setup) "$@" | tee -a "${OUTPUT_FILE}";;
 
